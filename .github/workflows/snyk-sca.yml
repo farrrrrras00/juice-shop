@@ -1,0 +1,36 @@
+name: DevSecOps Security Pipeline
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository ke runner
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Setup lingkungan Node.js
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # 3. Install dependencies project
+      - name: Install Dependencies
+        run: npm install
+
+      # 4. Jalankan Snyk Security Test (SCA)
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true # Opsional: agar pipeline tetap berjalan meski ada temuan
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
